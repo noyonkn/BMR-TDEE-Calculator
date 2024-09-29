@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMR & TDEE Calculator</title>
+    <style>
+        body {
+            font-family: 'Noto Sans Thai', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h3 {
+            text-align: center;
+            color: #333;
+        }
+        select, input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #9B1A30;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #B22A3C;
+        }
+        .result-box, .nutritional-requirements {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            border-left: 5px solid #9B1A30;
+        }
+        .result-row, .requirements-row {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        .result-item, .requirements-item {
+            flex: 1;
+            padding: 10px;
+            margin: 5px;
+            background: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        @media (max-width: 600px) {
+            .result-row, .requirements-row {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>BMR & TDEE Calculator</h1>
+    <select id="goal">
+        <option value="Get Healthy">Get Healthy</option>
+        <!-- Add more options as necessary -->
+    </select>
+
+    <input type="number" id="age" placeholder="Age" required>
+    <input type="number" id="weight" placeholder="Weight (kg)" required>
+    <input type="number" id="height" placeholder="Height (cm)" required>
+
+    <select id="gender">
+        <option value="female">Female</option>
+        <option value="male">Male</option>
+    </select>
+
+    <select id="activity">
+        <option value="rarely">Rarely Exercise</option>
+        <option value="light">Light Exercise (1-3 days/week)</option>
+        <option value="moderate">Moderate Exercise (3-5 days/week)</option>
+        <option value="active">Active Exercise (6-7 days/week)</option>
+        <option value="athlete">Training Like an Athlete</option>
+    </select>
+
+    <button id="calculateBtn">Calculate</button>
+
+    <div class="result-box">
+        <h3>Your Results</h3>
+        <div class="result-row">
+            <div class="result-item">
+                <p><strong>BMR (Basal Metabolic Rate)</strong></p>
+                <h4 id="bmrResult">0 kgcl</h4>
+            </div>
+            <div class="result-item">
+                <p><strong>TDEE (Total Daily Energy Expenditure)</strong></p>
+                <h4 id="tdeeResult">0 kgcl</h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="nutritional-requirements">
+        <h3>Nutritional Requirements</h3>
+        <div class="requirements-row">
+            <div class="requirements-item">
+                <h4>Carbohydrates</h4>
+                <div class="details" id="carbohydrates">0 g (0 kcal, 0%)</div>
+            </div>
+            <div class="requirements-item">
+                <h4>Protein</h4>
+                <div class="details" id="protein">0 g (0 kcal, 0%)</div>
+            </div>
+            <div class="requirements-item">
+                <h4>Fat</h4>
+                <div class="details" id="fat">0 g (0 kcal, 0%)</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Function to calculate BMR
+        function calculateBMR(weight, height, age, gender) {
+            if (gender === 'male') {
+                return 66 + (13.7 * weight) + (5 * height) - (6.8 * age); // Male BMR
+            } else {
+                return 655 + (9.56 * weight) + (1.85 * height) - (4.68 * age); // Female BMR
+            }
+        }
+
+        // Function to calculate TDEE
+        function calculateTDEE(bmr, activityFactor) {
+            return bmr * activityFactor; // Total Daily Energy Expenditure
+        }
+
+        // Function to update the nutritional requirements
+        function updateNutritionalRequirements(tdee) {
+            const totalCalories = tdee; // Using TDEE for nutritional calculations
+
+            const carbohydrateCalories = totalCalories * 0.45; // 45%
+            const proteinCalories = totalCalories * 0.25; // 25%
+            const fatCalories = totalCalories * 0.30; // 30%
+
+            return {
+                carbohydrates: { grams: (carbohydrateCalories / 4).toFixed(0), calories: carbohydrateCalories.toFixed(0), percent: (45).toFixed(0) },
+                protein: { grams: (proteinCalories / 4).toFixed(0), calories: proteinCalories.toFixed(0), percent: (25).toFixed(0) },
+                fat: { grams: (fatCalories / 9).toFixed(0), calories: fatCalories.toFixed(0), percent: (30).toFixed(0) }
+            };
+        }
+
+        // Function to handle the calculation
+        function handleCalculate() {
+            const goal = document.getElementById('goal').value;
+            const age = parseInt(document.getElementById('age').value);
+            const weight = parseFloat(document.getElementById('weight').value);
+            const height = parseFloat(document.getElementById('height').value);
+            const gender = document.getElementById('gender').value;
+            const activity = document.getElementById('activity').value;
+
+            // Activity factor based on selected option
+            const activityFactors = {
+                'rarely': 1.2,
+                'light': 1.375,
+                'moderate': 1.55,
+                'active': 1.725,
+                'athlete': 1.9
+            };
+
+            const activityFactor = activityFactors[activity];
+
+            // Calculate BMR and TDEE
+            const bmr = calculateBMR(weight, height, age, gender);
+            const tdee = calculateTDEE(bmr, activityFactor);
+            const nutritionalRequirements = updateNutritionalRequirements(tdee);
+
+            // Update the result in the HTML
+            document.getElementById('bmrResult').innerText = `${bmr.toFixed(0)} kgcl`;
+            document.getElementById('tdeeResult').innerText = `${tdee.toFixed(0)} kgcl`;
+            document.getElementById('carbohydrates').innerText = `${nutritionalRequirements.carbohydrates.grams} g (${nutritionalRequirements.carbohydrates.calories} kcal, ${nutritionalRequirements.carbohydrates.percent}%)`;
+            document.getElementById('protein').innerText = `${nutritionalRequirements.protein.grams} g (${nutritionalRequirements.protein.calories} kcal, ${nutritionalRequirements.protein.percent}%)`;
+            document.getElementById('fat').innerText = `${nutritionalRequirements.fat.grams} g (${nutritionalRequirements.fat.calories} kcal, ${nutritionalRequirements.fat.percent}%)`;
+        }
+
+        // Add event listener to the calculate button
+        document.getElementById('calculateBtn').addEventListener('click', handleCalculate);
+    });
+</script>
+
+</body>
+</html>
